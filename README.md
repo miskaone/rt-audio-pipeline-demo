@@ -45,7 +45,7 @@ Dockerfile
 README.md
 ```
 
-## Quick Start
+## Installation
 
 Create a virtual environment and install dependencies:
 
@@ -55,13 +55,25 @@ source .venv/bin/activate    # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-Run the server:
+Or use the Makefile:
+
+```bash
+make install
+```
+
+## Usage
+
+Run the development server:
 
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8001
 ```
 
-## Endpoints
+Or use the Makefile:
+
+```bash
+make run
+```
 
 ### Health Check
 
@@ -94,18 +106,52 @@ Example connection (using `websocat`):
 websocat ws://localhost:8001/ws/audio
 ```
 
-## Tests
 
-Run tests with:
+## Development
+
+### Running Tests
+
+Run all tests with:
 
 ```bash
 pytest
 ```
 
+Or use the Makefile:
+
+```bash
+make test
+```
+
+### Code Quality
+
+Format code and run linting:
+
+```bash
+make check
+```
+
+Or run separately:
+```bash
+make format  # Format code with black
+make lint    # Run linting checks
+```
+
+### Clean Up
+
+Remove temporary files:
+
+```bash
+make clean
+```
+
 Tests cover:
 
 - μ-law encode/decode round trips for silent audio (0), full-scale (±32767), and mid-range values
-- A simple in-process WebSocket echo check
+- WebSocket security and validation tests
+- Input validation and error handling
+- Quantization error bounds
+- API signature validation
 
 ## Docker
 
@@ -129,3 +175,7 @@ G.711 μ-law (mu-law) is a logarithmic audio codec standardized for telephony:
 - **Use cases**: VoIP, PSTN gateways, legacy phone systems
 
 The codec implementations in this project are pure Python for educational clarity, not optimized for production use.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

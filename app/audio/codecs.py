@@ -69,12 +69,63 @@ def _mulaw_to_linear_sample(code: int) -> int:
 def pcm16_to_mulaw(samples: Iterable[int]) -> bytes:
     """
     Convert an iterable of 16-bit signed PCM samples to μ-law bytes.
+
+    Args:
+        samples: Iterable of 16-bit signed PCM samples.
+
+    Returns:
+        μ-law encoded bytes.
+
+    Raises:
+        TypeError: If input is not iterable or contains non-integer values.
     """
-    return bytes(_linear_to_mulaw_sample(s) for s in samples)
+    # Input validation
+    if samples is None:
+        raise TypeError("Input cannot be None")
+
+    try:
+        # Convert to list to check individual elements
+        sample_list = list(samples)
+    except TypeError:
+        raise TypeError("Input must be iterable")
+
+    # Validate each sample
+    validated_samples = []
+    for sample in sample_list:
+        if not isinstance(sample, int):
+            raise TypeError(
+                f"All samples must be integers, got {type(sample)}"
+            )
+
+        # Clip to 16-bit range
+        if sample > 32767:
+            sample = 32767
+        elif sample < -32768:
+            sample = -32768
+
+        validated_samples.append(sample)
+
+    return bytes(_linear_to_mulaw_sample(s) for s in validated_samples)
 
 
 def mulaw_to_pcm16(data: bytes) -> List[int]:
     """
     Convert μ-law bytes to a list of 16-bit signed PCM samples.
+
+    Args:
+        data: μ-law encoded bytes.
+
+    Returns:
+        List of 16-bit signed PCM samples.
+
+    Raises:
+        TypeError: If input is not bytes or bytearray.
     """
+    # Input validation
+    if data is None:
+        raise TypeError("Input cannot be None")
+
+    if not isinstance(data, (bytes, bytearray)):
+        raise TypeError("Input must be bytes or bytearray")
+
     return [_mulaw_to_linear_sample(b) for b in data]
