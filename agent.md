@@ -176,15 +176,35 @@ Expected layout:
 └── README.md
 ```
 
+## Development approach (TDD)
+
+## Follow a simple TDD loop:
+
+1. Write tests first for:
+   - μ-law codec behavior
+   - WebSocket echo behavior
+2. Run tests and confirm they fail.
+3. Implement the minimum code needed to make the tests pass.
+4. Refactor if needed, keeping tests green.
+
+Do not add features that are not covered by tests.
+
 ## Success Criteria
 
 ✅ Service starts and responds to `/health` with 200 OK  
+
 ✅ WebSocket accepts connection at `/ws/audio`  
-✅ Binary frames are logged and echoed back correctly  
+
+✅ Binary frames are logged and echoed back correctly 
+
 ✅ μ-law codec converts PCM16 → μ-law → PCM16 with acceptable accuracy  
+
 ✅ All tests pass with `pytest`  
+
 ✅ Docker image builds and runs successfully  
+
 ✅ README provides clear setup and usage instructions  
+
 ✅ Code is readable and well-commented where logic is non-obvious  
 
 ## Non-Goals
