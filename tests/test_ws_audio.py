@@ -23,7 +23,7 @@ class TestWebSocketAudio:
     def test_ws_audio_echo_simple(self):
         """WebSocket should echo binary frames exactly."""
         with client.websocket_connect("/ws/audio") as ws:
-            payload = b"\x01\x02\x03\x04\x05"
+            payload = b"\x01\x02\x03\x04\x05\x06"  # 6 bytes (valid PCM16)
             ws.send_bytes(payload)
             echoed = ws.receive_bytes()
             assert echoed == payload
@@ -42,7 +42,11 @@ class TestWebSocketAudio:
 
     def test_ws_audio_multiple_frames(self):
         """WebSocket should echo multiple frames in order."""
-        frames = [b"\x00\x01", b"\x02\x03\x04", b"\x05\x06\x07\x08"]
+        frames = [
+            b"\x00\x01",
+            b"\x02\x03\x04\x05",
+            b"\x05\x06\x07\x08"
+        ]  # All even lengths
 
         with client.websocket_connect("/ws/audio") as ws:
             for frame in frames:

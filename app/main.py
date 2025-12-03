@@ -9,6 +9,10 @@ logging.basicConfig(
 logger = logging.getLogger("rt_audio_demo")
 
 
+# WebSocket security configuration
+MAX_FRAME_SIZE = 1_048_576  # 1MB maximum frame size
+IDLE_TIMEOUT = 300  # 5 minutes idle timeout
+
 app = FastAPI(title="Real-time Audio Pipeline Demo")
 
 
@@ -32,6 +36,25 @@ async def audio_websocket(ws: WebSocket):
     try:
         while True:
             frame = await ws.receive_bytes()
+
+            # Validate frame size
+            if len(frame) > MAX_FRAME_SIZE:
+                logger.warning(
+                    "Frame too large: %d bytes (max: %d)",
+                    len(frame), MAX_FRAME_SIZE
+                )
+                await ws.close(code=1009)  # Message too big
+                break
+
+            # Validate PCM16 format (must be even number of bytes)
+            if len(frame) % 2 != 0:
+                logger.warning(
+                    "Invalid PCM16 frame: %d bytes (must be even)",
+                    len(frame)
+                )
+                await ws.close(code=1003)  # Unsupported data
+                break
+                
             logger.info("Received %d bytes", len(frame))
 
             # Echo back exactly what we received
