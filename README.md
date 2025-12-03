@@ -29,6 +29,8 @@ Use this as a learning reference or starting point for:
 - Binary WebSocket frames treated as 16-bit PCM audio chunks
 - G.711 μ-law encode/decode helpers in pure Python
 - Tests for round-trip μ-law conversion and a basic WebSocket echo
+- Automatic codec selection (audioop / NumPy / pure Python) with
+  performance benchmarks
 
 ## Project Structure
 
@@ -36,10 +38,17 @@ Use this as a learning reference or starting point for:
 app/
 ├── main.py              # FastAPI app and WebSocket endpoint
 ├── audio/
-│   └── codecs.py        # PCM16 ↔ μ-law conversion helpers
+│   ├── codecs.py        # Core PCM16 ↔ μ-law conversion helpers
+│   ├── codecs_audioop.py  # audioop-accelerated μ-law helpers
+│   ├── codecs_numpy.py    # NumPy-aware μ-law helpers
+│   └── codecs_auto.py     # automatic codec selection logic
 tests/
-├── test_codecs.py       # Audio codec tests
-└── test_ws_audio.py     # WebSocket and health endpoint tests
+├── test_codecs.py         # Audio codec tests
+├── test_codec_negative.py # Negative and quantization tests
+├── test_codec_performance.py # Codec performance and selection tests
+└── test_ws_audio.py       # WebSocket and health endpoint tests
+benchmarks/
+└── codec_performance.py # Simple codec performance benchmark script
 requirements.txt
 Dockerfile
 README.md
@@ -105,7 +114,35 @@ Example connection (using `websocat`):
 ```bash
 websocat ws://localhost:8001/ws/audio
 ```
+#### Codec selection and performance tiers
 
+By default, the server chooses the **best available codec implementation** in
+this order:
+
+1. `audioop` – C implementation from the Python stdlib (fastest)
+2. `numpy` – vectorized implementation when NumPy is installed
+3. Pure Python – always available, maximally portable
+
+You can explicitly select a codec using the `codec` query parameter on the
+WebSocket URL:
+
+- `ws://localhost:8001/ws/audio?codec=audioop`
+- `ws://localhost:8001/ws/audio?codec=numpy`
+- `ws://localhost:8001/ws/audio?codec=pure_python`
+
+If the requested codec is not available on the current environment, the
+server falls back to the best available option.
+
+#### Benchmarking codec performance
+
+To compare the different implementations, use the benchmark script:
+
+```bash
+python benchmarks/codec_performance.py --quick
+```
+
+This prints a small table showing encode/decode and round-trip timings plus
+estimated samples per second for each available codec.
 
 ## Development
 

@@ -3,6 +3,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+import app.main as main
 
 client = TestClient(app)
 
@@ -53,3 +54,16 @@ class TestWebSocketAudio:
                 ws.send_bytes(frame)
                 echoed = ws.receive_bytes()
                 assert echoed == frame
+
+    def test_ws_audio_uses_process_chunk(self):
+        """WebSocket should pass frames through process_chunk hook."""
+        original = main.process_chunk
+        main.process_chunk = main.example_process_chunk_double
+        try:
+            with client.websocket_connect("/ws/audio") as ws:
+                payload = b"\x01\x02"  # 2 bytes (valid PCM16 length)
+                ws.send_bytes(payload)
+                echoed = ws.receive_bytes()
+                assert echoed == payload + payload
+        finally:
+            main.process_chunk = original
